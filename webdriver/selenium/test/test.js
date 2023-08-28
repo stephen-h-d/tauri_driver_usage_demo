@@ -13,7 +13,7 @@ const application = path.resolve(
   'src-tauri',
   'target',
   'release',
-  'testing-tauri-driver'
+  'testing_tauri_driver'
 )
 
 // keep track of the webdriver instance we create
