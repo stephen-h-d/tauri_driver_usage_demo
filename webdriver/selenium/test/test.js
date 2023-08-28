@@ -2,7 +2,7 @@ const os = require('os')
 const path = require('path')
 const { expect } = require('chai')
 const { spawn, spawnSync } = require('child_process')
-const { Builder, By, Capabilities } = require('selenium-webdriver')
+const { Builder, By, Capabilities, until } = require('selenium-webdriver')
 
 // create the path to the expected application binary
 const application = path.resolve(
@@ -56,26 +56,27 @@ after(async function () {
 })
 
 describe('Hello Tauri', () => {
-  it('should be cordial', async () => {
-    const text = await driver.findElement(By.css('body > h1')).getText()
-    expect(text).to.match(/^[hH]ello/)
-  })
 
-  it('should be excited', async () => {
-    const text = await driver.findElement(By.css('body > h1')).getText()
-    expect(text).to.match(/!$/)
-  })
+  it('should generate the correct greeting message', async function() {
 
-  it('should be easy on the eyes', async () => {
-    // selenium returns color css values as rgb(r, g, b)
-    const text = await driver
-      .findElement(By.css('body'))
-      .getCssValue('background-color')
+    // this.timeout(120000);
+    // await driver.sleep(60000);
 
-    const rgb = text.match(/^rgb\((?<r>\d+), (?<g>\d+), (?<b>\d+)\)$/).groups
-    expect(rgb).to.have.all.keys('r', 'g', 'b')
+    // Locate the input field, clear it, and then enter the name "Bob"
+    let inputField = await driver.wait(until.elementLocated(By.id('greet-input')), 5000);
+    await inputField.clear();
+    await inputField.sendKeys('Bob');
 
-    const luma = 0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b
-    expect(luma).to.be.lessThan(100)
-  })
+    // Locate the "Greet" button and click it
+    let greetButton = await driver.findElement(By.css('button[type="submit"]'));
+    await greetButton.click();
+
+    // Wait for the greeting message to appear and then check its text
+    let greetingMsg = await driver.wait(until.elementLocated(By.css('p:last-child')), 5000);
+    let msgText = await greetingMsg.getText();
+
+    // Assertion
+    assert.strictEqual(msgText, "Hello, Bob! You've been greeted from Rust!");
+  });
+
 })
